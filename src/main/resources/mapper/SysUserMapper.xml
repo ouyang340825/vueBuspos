@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.njty.buspos.mapper.SysUserMapper">
+
+	<resultMap id="SysUserMap" type="com.njty.buspos.entity.SysUserEntity">
+		<id column="id" jdbcType="VARCHAR" property="id" />
+		<result column="USERNAME" jdbcType="VARCHAR" property="username" />
+		<result column="MOBILE" jdbcType="VARCHAR" property="mobile" />
+		<result column="EMAIL" jdbcType="VARCHAR" property="email" />
+		<result column="PASSWORD" jdbcType="VARCHAR" property="password" />
+		<result column="INSERT_UID" jdbcType="INTEGER" property="insertUid" />
+		<result column="INSERT_TIME" jdbcType="VARCHAR" property="insertTime" />
+		<result column="UPDATE_TIME" jdbcType="VARCHAR" property="updateTime" />
+		<result column="IS_DEL" jdbcType="VARCHAR" property="isDel" />
+		<result column="IS_JOB" jdbcType="VARCHAR" property="isJob" />
+		<result column="MCODE" jdbcType="VARCHAR" property="mcode" />
+		<result column="SEND_TIME" jdbcType="VARCHAR" property="sendTime" />
+		<result column="VERSION" jdbcType="VARCHAR" property="version" />
+		<result column="HEADIMG" jdbcType="VARCHAR" property="headImg" />
+	</resultMap>
+
+    <resultMap id="SysUserMap2" type="com.njty.buspos.entity.SysUserEntity">
+        <id column="ID" jdbcType="VARCHAR" property="id" />
+        <result column="USERNAME" jdbcType="VARCHAR" property="username" />
+        <result column="MOBILE" jdbcType="VARCHAR" property="mobile" />
+        <result column="EMAIL" jdbcType="VARCHAR" property="email" />
+        <result column="PASSWORD" jdbcType="VARCHAR" property="password" />
+        <result column="INSERT_UID" jdbcType="INTEGER" property="insertUid" />
+        <result column="INSERT_TIME" jdbcType="VARCHAR" property="insertTime" />
+        <result column="UPDATE_TIME" jdbcType="VARCHAR" property="updateTime" />
+        <result column="IS_DEL" jdbcType="VARCHAR" property="isDel" />
+        <result column="IS_JOB" jdbcType="VARCHAR" property="isJob" />
+        <result column="MCODE" jdbcType="VARCHAR" property="mcode" />
+        <result column="SEND_TIME" jdbcType="VARCHAR" property="sendTime" />
+        <result column="VERSION" jdbcType="VARCHAR" property="version" />
+        <result column="TOTAL" jdbcType="VARCHAR" property="t" />
+        <result column="ROLE_NAME" jdbcType="VARCHAR" property="roleName" />
+    </resultMap>
+
+    <select id="getSysUserList"  resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (
+				  SELECT A1.*, A2.ROLE_NAME, count(*) over() as TOTAL  FROM SYS_USER A1
+				  LEFT JOIN SYS_ROLE A2 ON A2.ID = A1.ROLEID
+				  WHERE A1.IS_DEL = '0'
+                ORDER BY A1.INSERT_TIME
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+    <select id="getSysUserList2"  resultMap="SysUserMap2">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (
+				  SELECT A1.*, A2.ROLE_NAME, count(*) over() as TOTAL  FROM SYS_USER A1
+				  LEFT JOIN SYS_ROLE A2 ON A2.ID = A1.ROLEID
+				  WHERE A1.IS_DEL = '0'
+                ORDER BY A1.INSERT_TIME
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+    <insert id="addSysUser" >
+		<![CDATA[
+			INSERT INTO SYS_USER (ID,USERNAME,MOBILE,EMAIL,PASSWORD,IS_JOB,INSERT_TIME,IS_DEL,ROLEID,HEADIMG)
+			VALUES (#{ID},#{USERNAME},#{MOBILE},#{EMAIL},#{PASSWORD},#{IS_JOB},#{INSERT_TIME},'0',#{ROLEID},#{HEADIMG})
+		]]>
+	</insert>
+
+    <insert id="addSysUser2" >
+		<![CDATA[
+			INSERT INTO SYS_USER (ID,USERNAME,PASSWORD,IS_JOB,INSERT_TIME,IS_DEL,ROLEID,HEADIMG)
+			VALUES (#{id},#{username},#{password},#{isJob},#{insertTime},'0',#{roleId},#{headImg})
+		]]>
+	</insert>
+
+    <update id="modSysUser">
+		<![CDATA[
+			UPDATE SYS_USER SET
+			USERNAME = #{username},
+			ROLEID = #{roleId},
+			HEADIMG = #{headImg},
+			IS_JOB = #{isJob}
+			where ID = #{id}
+		]]>
+	</update>
+
+
+    <delete id="delSysUserList" >
+		UPDATE SYS_USER SET
+		IS_DEL = '1'
+			WHERE ID
+			 IN
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+
+	</delete>
+
+
+	<select id="findUserByUsername"  resultMap="SysUserMap" >
+        <![CDATA[
+			SELECT A1.*  FROM SYS_USER A1
+			WHERE A1.IS_DEL = '0' and A1.USERNAME = #{username,jdbcType=VARCHAR}
+	  	]]>
+
+    </select>
+
+	<update id="changePwd">
+		<![CDATA[
+			UPDATE SYS_USER SET
+			PASSWORD = #{PASSWORD}
+			where ID = #{ID}
+		]]>
+	</update>
+
+
+</mapper>

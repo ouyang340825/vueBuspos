@@ -1,0 +1,1095 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.njty.buspos.mapper.QueryStatsMapper">
+
+    <select id="getPosTranList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.POS_ID , TO_CHAR(A.ADDTIME, 'YYYY-MM-DD HH24:MI:SS') as ADDTIME, A.PASM_NO, A.BUS_NO, A.TRAN_SEQ_NO,A.USER_CARD_FACE_NO,A.CONSUME_AMOUNT,A.LINE_NO,A.DCS_NO,
+							A.COMPANY_NO,A.TRAN_TIME,decode(A.USER_CARD_KIND,'101','1',A.USER_CARD_KIND) as USER_CARD_KIND,count(*) over() as TOTAL
+							FROM TAB_POSDATA_HIS A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO = A.COMPANY_NO
+							INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TRAN_TIME_START != null and TRAN_TIME_START != ''">
+                AND A.TRAN_TIME >= #{TRAN_TIME_START}
+            </if>
+            <if test="TRAN_TIME_END != null and TRAN_TIME_END != ''">
+                <![CDATA[
+                 AND A.TRAN_TIME <=  #{TRAN_TIME_END}
+                ]]>
+            </if>
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="BUS_NO != null and BUS_NO != ''">
+                AND A.BUS_NO LIKE '%' || #{BUS_NO} || '%'
+            </if>
+            <if test="USER_CARD_KIND != null and USER_CARD_KIND != ''">
+                AND A.USER_CARD_KIND = #{USER_CARD_KIND}
+            </if>
+            <if test="DCS_NO != null and DCS_NO != ''">
+                AND A.DCS_NO LIKE '%' || #{DCS_NO} || '%'
+            </if>
+            <if test="TRAN_SEQ_NO != null and TRAN_SEQ_NO != ''">
+                AND A.TRAN_SEQ_NO LIKE '%' || #{TRAN_SEQ_NO} || '%'
+            </if>
+            <if test="USER_CARD_FACE_NO != null and USER_CARD_FACE_NO != ''">
+                AND A.USER_CARD_FACE_NO LIKE '%' || #{USER_CARD_FACE_NO} || '%'
+            </if>
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO = #{COMPANY_NO}
+            </if>
+        </trim>
+        <![CDATA[
+                ORDER BY A.TRAN_TIME DESC
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+
+    <select id="getPosTranForEcharts" resultType="java.util.Map">
+        <![CDATA[
+			SELECT SUBSTR(A.TRAN_TIME, 0, 8) AS TRANSDATE,COUNT(*) AS NUM,SUM(A.CONSUME_AMOUNT) AS MONEY,COUNT(*) OVER() AS TOTAL
+							FROM TAB_POSDATA_HIS A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO = A.COMPANY_NO
+							INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TRAN_TIME_START != null and TRAN_TIME_START != ''">
+                AND A.TRAN_TIME >= #{TRAN_TIME_START}
+            </if>
+            <if test="TRAN_TIME_END != null and TRAN_TIME_END != ''">
+                <![CDATA[
+                 AND A.TRAN_TIME <=  #{TRAN_TIME_END}
+                ]]>
+            </if>
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="BUS_NO != null and BUS_NO != ''">
+                AND A.BUS_NO LIKE '%' || #{BUS_NO} || '%'
+            </if>
+            <if test="USER_CARD_KIND != null and USER_CARD_KIND != ''">
+                AND A.USER_CARD_KIND = #{USER_CARD_KIND}
+            </if>
+            <if test="DCS_NO != null and DCS_NO != ''">
+                AND A.DCS_NO LIKE '%' || #{DCS_NO} || '%'
+            </if>
+            <if test="TRAN_SEQ_NO != null and TRAN_SEQ_NO != ''">
+                AND A.TRAN_SEQ_NO LIKE '%' || #{TRAN_SEQ_NO} || '%'
+            </if>
+            <if test="USER_CARD_FACE_NO != null and USER_CARD_FACE_NO != ''">
+                AND A.USER_CARD_FACE_NO LIKE '%' || #{USER_CARD_FACE_NO} || '%'
+            </if>
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO = #{COMPANY_NO}
+            </if>
+        </trim>
+        <![CDATA[
+                GROUP BY SUBSTR(A.TRAN_TIME, 0, 8)
+                ORDER BY SUBSTR(A.TRAN_TIME, 0, 8)
+	  	]]>
+
+    </select>
+
+    <select id="getPosTranListForExport" resultType="java.util.Map">
+        <![CDATA[
+			SELECT A.POS_ID , TO_CHAR(A.ADDTIME, 'YYYY-MM-DD HH24:MI:SS') as ADDTIME, A.PASM_NO, A.BUS_NO, A.TRAN_SEQ_NO,A.USER_CARD_FACE_NO,A.CONSUME_AMOUNT,A.LINE_NO,A.DCS_NO,
+							A.COMPANY_NO,A.TRAN_TIME,decode(A.USER_CARD_KIND,'101','1',A.USER_CARD_KIND) as USER_CARD_KIND
+							FROM TAB_POSDATA_HIS A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO = A.COMPANY_NO
+							INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TRAN_TIME_START != null and TRAN_TIME_START != ''">
+                AND A.TRAN_TIME >= #{TRAN_TIME_START}
+            </if>
+            <if test="TRAN_TIME_END != null and TRAN_TIME_END != ''">
+                <![CDATA[
+                 AND A.TRAN_TIME <=  #{TRAN_TIME_END}
+                ]]>
+            </if>
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="BUS_NO != null and BUS_NO != ''">
+                AND A.BUS_NO LIKE '%' || #{BUS_NO} || '%'
+            </if>
+            <if test="USER_CARD_KIND != null and USER_CARD_KIND != ''">
+                AND A.USER_CARD_KIND = #{USER_CARD_KIND}
+            </if>
+            <if test="DCS_NO != null and DCS_NO != ''">
+                AND A.DCS_NO LIKE '%' || #{DCS_NO} || '%'
+            </if>
+            <if test="TRAN_SEQ_NO != null and TRAN_SEQ_NO != ''">
+                AND A.TRAN_SEQ_NO LIKE '%' || #{TRAN_SEQ_NO} || '%'
+            </if>
+            <if test="USER_CARD_FACE_NO != null and USER_CARD_FACE_NO != ''">
+                AND A.USER_CARD_FACE_NO LIKE '%' || #{USER_CARD_FACE_NO} || '%'
+            </if>
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO = #{COMPANY_NO}
+            </if>
+        </trim>
+        <![CDATA[
+                ORDER BY A.TRAN_TIME DESC
+	  	]]>
+
+    </select>
+
+
+    <select id="getCodeTranList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.POS_ID,A.PSAMID,A.BUSCODE,A.LGORC,A.DCS_NO,TO_CHAR(A.ADDTIME, 'YYYY-MM-DD HH24:MI:SS') as ADDTIME, A.RECORDID,
+                            A.COMPANY_ID,A.ALIASCARDNO,A.TRANSSEQNO,A.TRANSTIME,A.TRANSAMT,count(*) over() as TOTAL FROM TAB_QRDATA_HIS A
+							LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO = A.COMPANY_ID
+							INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            A.BUSCODE IS NOT NULL
+            <if test="QRTYPE != null and QRTYPE != ''">
+                AND SUBSTR(A.ALIASCARDNO,1,3) = #{QRTYPE}
+            </if>
+            <if test="ALIASCARDNO != null and ALIASCARDNO != ''">
+                AND A.ALIASCARDNO LIKE '%' || #{ALIASCARDNO} || '%'
+            </if>
+            <if test="TRANSTIME_START != null and TRANSTIME_START != ''">
+                AND A.TRANSTIME >= #{TRANSTIME_START}
+            </if>
+            <if test="TRANSTIME_END != null and TRANSTIME_END != ''">
+                <![CDATA[
+                 AND A.TRANSTIME <=  #{TRANSTIME_END}
+                ]]>
+            </if>
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="LGORC != null and LGORC != ''">
+                AND A.LGORC LIKE '%' || #{LGORC} || '%'
+            </if>
+            <if test="BUSCODE != null and BUSCODE != ''">
+                AND A.BUSCODE LIKE '%' || #{BUSCODE} || '%'
+            </if>
+            <if test="DCS_NO != null and DCS_NO != ''">
+                AND A.DCS_NO LIKE '%' || #{DCS_NO} || '%'
+            </if>
+            <if test="TRANSSEQNO != null and TRANSSEQNO != ''">
+                AND A.TRANSSEQNO LIKE '%' || #{TRANSSEQNO} || '%'
+            </if>
+
+            <if test="COMPANY_ID != null and COMPANY_ID != ''">
+                AND A.COMPANY_ID = #{COMPANY_ID}
+            </if>
+        </trim>
+        <![CDATA[
+                ORDER BY A.TRANSTIME DESC
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+    <select id="getCodeTranForEcharts" resultType="java.util.Map">
+        <![CDATA[
+			SELECT SUBSTR(A.TRANSTIME, 0, 8) AS TRANSDATE,COUNT(*) AS NUM,SUM(A.TRANSAMT) AS MONEY,COUNT(*) OVER() AS TOTAL FROM TAB_QRDATA_HIS A
+							LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO = A.COMPANY_ID
+							INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            A.BUSCODE IS NOT NULL
+            <if test="QRTYPE != null and QRTYPE != ''">
+                AND SUBSTR(A.ALIASCARDNO,1,3) = #{QRTYPE}
+            </if>
+            <if test="ALIASCARDNO != null and ALIASCARDNO != ''">
+                AND A.ALIASCARDNO LIKE '%' || #{ALIASCARDNO} || '%'
+            </if>
+            <if test="TRANSTIME_START != null and TRANSTIME_START != ''">
+                AND A.TRANSTIME >= #{TRANSTIME_START}
+            </if>
+            <if test="TRANSTIME_END != null and TRANSTIME_END != ''">
+                <![CDATA[
+                 AND A.TRANSTIME <=  #{TRANSTIME_END}
+                ]]>
+            </if>
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="LGORC != null and LGORC != ''">
+                AND A.LGORC LIKE '%' || #{LGORC} || '%'
+            </if>
+            <if test="BUSCODE != null and BUSCODE != ''">
+                AND A.BUSCODE LIKE '%' || #{BUSCODE} || '%'
+            </if>
+            <if test="DCS_NO != null and DCS_NO != ''">
+                AND A.DCS_NO LIKE '%' || #{DCS_NO} || '%'
+            </if>
+            <if test="TRANSSEQNO != null and TRANSSEQNO != ''">
+                AND A.TRANSSEQNO LIKE '%' || #{TRANSSEQNO} || '%'
+            </if>
+
+            <if test="TRANSAMT != null and TRANSAMT != ''">
+                AND A.COMPANY_ID = #{COMPANY_ID}
+            </if>
+        </trim>
+        <![CDATA[
+                GROUP BY SUBSTR(A.TRANSTIME, 0, 8)
+                ORDER BY SUBSTR(A.TRANSTIME, 0, 8)
+	  	]]>
+
+    </select>
+
+
+    <select id="getCodeTranListForExport" resultType="java.util.Map">
+        <![CDATA[
+			SELECT A.POS_ID,A.COMPANY_ID,A.PSAMID,A.BUSCODE,A.LGORC,A.DCS_NO,TO_CHAR(A.ADDTIME, 'YYYY-MM-DD HH24:MI:SS') as ADDTIME, A.RECORDID,
+                            A.ALIASCARDNO,A.TRANSSEQNO,A.TRANSTIME,A.TRANSAMT FROM TAB_QRDATA_HIS A
+							LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO = A.COMPANY_ID
+							INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            A.BUSCODE IS NOT NULL
+            <if test="QRTYPE != null and QRTYPE != ''">
+                AND SUBSTR(A.ALIASCARDNO,1,3) = #{QRTYPE}
+            </if>
+            <if test="ALIASCARDNO != null and ALIASCARDNO != ''">
+                AND A.ALIASCARDNO LIKE '%' || #{ALIASCARDNO} || '%'
+            </if>
+            <if test="TRANSTIME_START != null and TRANSTIME_START != ''">
+                AND A.TRANSTIME >= #{TRANSTIME_START}
+            </if>
+            <if test="TRANSTIME_END != null and TRANSTIME_END != ''">
+                <![CDATA[
+                 AND A.TRANSTIME <=  #{TRANSTIME_END}
+                ]]>
+            </if>
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="LGORC != null and LGORC != ''">
+                AND A.LGORC LIKE '%' || #{LGORC} || '%'
+            </if>
+            <if test="BUSCODE != null and BUSCODE != ''">
+                AND A.BUSCODE LIKE '%' || #{BUSCODE} || '%'
+            </if>
+            <if test="DCS_NO != null and DCS_NO != ''">
+                AND A.DCS_NO LIKE '%' || #{DCS_NO} || '%'
+            </if>
+            <if test="TRANSSEQNO != null and TRANSSEQNO != ''">
+                AND A.TRANSSEQNO LIKE '%' || #{TRANSSEQNO} || '%'
+            </if>
+
+            <if test="TRANSAMT != null and TRANSAMT != ''">
+                AND A.COMPANY_ID = #{COMPANY_ID}
+            </if>
+        </trim>
+        <![CDATA[
+                ORDER BY A.TRANSTIME DESC
+	  	]]>
+
+    </select>
+
+
+    <select id="getStatsPosTranList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.POS_ID,A.LINE_NO,A.BUS_NO,COUNT(*) AS CNT,SUM(A.CONSUME_AMOUNT) AS CONSUME_AMOUNT,
+				  count(*) over() as TOTAL FROM TAB_POSDATA_HIS A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO = A.COMPANY_NO
+                  INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TRAN_TIME_START != null and TRAN_TIME_START != ''">
+                AND A.TRAN_TIME >= #{TRAN_TIME_START}
+            </if>
+            <if test="TRAN_TIME_END != null and TRAN_TIME_END != ''">
+                <![CDATA[
+                 AND A.TRAN_TIME <=  #{TRAN_TIME_END}
+                ]]>
+            </if>
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="BUS_NO != null and BUS_NO != ''">
+                AND A.BUS_NO LIKE '%' || #{BUS_NO} || '%'
+            </if>
+            <if test="USER_CARD_KIND != null and USER_CARD_KIND != ''">
+                AND A.USER_CARD_KIND =  #{USER_CARD_KIND}
+            </if>
+        </trim>
+        <![CDATA[
+                GROUP BY  A.POS_ID,A.LINE_NO,A.BUS_NO
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+    </select>
+
+
+    <select id="getStatsPosTranListForExport" resultType="java.util.Map">
+        <![CDATA[
+              SELECT A.POS_ID,A.LINE_NO,A.BUS_NO,COUNT(*) AS CNT,SUM(A.CONSUME_AMOUNT) AS CONSUME_AMOUNT
+              FROM TAB_POSDATA_HIS A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO = A.COMPANY_NO
+              INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TRAN_TIME_START != null and TRAN_TIME_START != ''">
+                AND A.TRAN_TIME >= #{TRAN_TIME_START}
+            </if>
+            <if test="TRAN_TIME_END != null and TRAN_TIME_END != ''">
+                <![CDATA[
+                 AND A.TRAN_TIME <=  #{TRAN_TIME_END}
+                ]]>
+            </if>
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="BUS_NO != null and BUS_NO != ''">
+                AND A.BUS_NO LIKE '%' || #{BUS_NO} || '%'
+            </if>
+            <if test="USER_CARD_KIND != null and USER_CARD_KIND != ''">
+                AND A.USER_CARD_KIND =  #{USER_CARD_KIND}
+            </if>
+        </trim>
+        <![CDATA[
+                GROUP BY  A.POS_ID,A.LINE_NO,A.BUS_NO
+	  	]]>
+    </select>
+
+
+    <select id="getPosOnlineList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A2.B,A2.C,A2.E AS D,A2.E/A2.C*100 AS E ,count(*) over() as TOTAL FROM
+							(SELECT A1.COMPANY_NO AS B,COUNT(1) AS C,SUM(DECODE(SIGN(24-(SYSDATE-TO_DATE(A1.REG_TIME,'YYYY-MM-DD HH24:MI:SS'))*24),-1,1,0)) AS D,SUM(DECODE(SIGN(24-(SYSDATE-TO_DATE(A1.REG_TIME,'YYYY-MM-DD HH24:MI:SS'))*24),0,1,1,1,0)) AS E FROM TAB_POSREG A1
+							 LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A1.COMPANY_NO
+				 INNER JOIN SYS_USER_DEVGROUP UD
+                    ON UD.GROUP_ID = B.GROUP_ID
+                   AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A1.COMPANY_NO =  #{COMPANY_NO}
+            </if>
+        </trim>
+        <![CDATA[
+                GROUP BY A1.COMPANY_NO) A2
+                ORDER BY A2.B
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+    </select>
+
+    <select id="getPosInfoList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.*,D.CANCELFLAG,
+                                                case when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >=3 then '2M'
+            when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2 then '1M'
+              else '0M'
+                END as OVER_TIME ,count(*) over() as TOTAL
+                 FROM TAB_POSREG A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                                          INNER JOIN (select t.pos_id,t.cancelflag from TAB_POSINFO t  group by t.pos_id,t.cancelflag)D
+                                          ON A.POS_ID = D.POS_ID
+                                          INNER JOIN SYS_USER_DEVGROUP UD
+                    ON UD.GROUP_ID = B.GROUP_ID
+                   AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO LIKE '%' || #{COMPANY_NO} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="CAR_NO != null and CAR_NO != ''">
+                AND A.CAR_NO LIKE '%' || #{CAR_NO} || '%'
+            </if>
+            <if test="TERMINAL_VER != null and TERMINAL_VER != ''">
+                AND A.TERMINAL_VER LIKE '%' || #{TERMINAL_VER} || '%'
+            </if>
+            <if test="AUDIOVER != null and AUDIOVER != ''">
+                AND A.AUDIOVER LIKE '%' || #{AUDIOVER} || '%'
+            </if>
+            <if test="ALARMTYPE == 4">
+                AND ALARM4BLACKLISTVER = 1
+            </if>
+            <if test="ALARMTYPE == 1">
+                AND ALARM4DISCOUNT = 1
+            </if>
+            <if test="ALARMTYPE == 2">
+                AND ALARM4TICKETVER = 1
+            </if>
+            <if test="ALARMTYPE == 3">
+                AND ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >=3
+            </if>
+            <if test="ALARMTYPE == 5">
+                AND D.CANCELFLAG = 1
+            </if>
+            <if test="REG_TIME != null and REG_TIME != ''">
+                <![CDATA[
+	         		 AND A.REG_TIME <=  #{REG_TIME}
+	         		]]>
+            </if>
+
+        </trim>
+        <![CDATA[
+                ORDER BY REG_TIME DESC, LINE_NO,CAR_NO
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+    <select id="getPosInfoListForExport" resultType="java.util.Map">
+        <![CDATA[
+			SELECT A.COMPANY_NO, A.LINE_NO,A.CAR_NO,A.POS_ID,A.MONTH_CURR_PRICE,A.PASM_NO,
+			A.REG_TIME,A.ALARM4BLACKLISTVER,A.ALARM4DISCOUNT, A.ALARM4TICKETVER,
+			A.LOCATIONSTATE,A.POS_TRANSEQ,A.POS_TRANSEQ_ALIPAY,A.LONGITUDE,A.LATITUDE, A.POS_TIME,
+			A.QRCODETRADENUM,A.POS_COUNTOFDATANOTSENT,A.POS_COUNTOFDATANOTSENT_ALIPAY,A.LASTTRANTIME,A.GPSTIME, A.DCS_NO,
+			A.TERMINAL_VER,A.BLACKLIST_VER_BASE,A.DISCOUNT_CURR_VER,A.MODEL_TYPE,A.SIM_CID, A.BEGINDAY,
+			A.PSAMSN,A.POSSN,A.TICKETVER1,A.TICKETVER2,A.PACKVER, A.POSVER,
+			A.GUIVER,A.AUDIOVER,A.MFRC52XVER,A.NUM4QUICKPASS,A.NUM4QUICKPASSROLLBACK,A.UNIONPAYREGSTATE,A.UNIONPAYCERTDOWNLOADSTATE,
+			A.UNIONPAYQUICKPASSSTATE,A.BUSIIP,A.BUSIPORT,A.UNIONPAYIP,A.UNIONPAYPORT,A.UNIONPAYTRADEOVERTIME,A.UNIONPAYDEVNO,
+			D.CANCELFLAG,case when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >=3 then '2M'
+            when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2 then '1M'
+              else '0M'
+                END as OVER_TIME ,count(*) over() as TOTAL
+                 FROM TAB_POSREG A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                                          INNER JOIN (select t.pos_id,t.cancelflag from TAB_POSINFO t  group by t.pos_id,t.cancelflag)D
+                                            ON A.POS_ID = D.POS_ID
+                                            INNER JOIN SYS_USER_DEVGROUP UD
+                    ON UD.GROUP_ID = B.GROUP_ID
+                   AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO LIKE '%' || #{COMPANY_NO} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="CAR_NO != null and CAR_NO != ''">
+                AND A.CAR_NO LIKE '%' || #{CAR_NO} || '%'
+            </if>
+            <if test="TERMINAL_VER != null and TERMINAL_VER != ''">
+                AND A.TERMINAL_VER LIKE '%' || #{TERMINAL_VER} || '%'
+            </if>
+            <if test="AUDIOVER != null and AUDIOVER != ''">
+                AND A.AUDIOVER LIKE '%' || #{AUDIOVER} || '%'
+            </if>
+            <if test="ALARMTYPE == 4">
+                AND ALARM4BLACKLISTVER = 1
+            </if>
+            <if test="ALARMTYPE == 1">
+                AND ALARM4DISCOUNT = 1
+            </if>
+            <if test="ALARMTYPE == 2">
+                AND ALARM4TICKETVER = 1
+            </if>
+            <if test="ALARMTYPE == 3">
+                AND ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >=3
+            </if>
+            <if test="ALARMTYPE == 5">
+                AND D.CANCELFLAG = 1
+            </if>
+            <if test="REG_TIME != null and REG_TIME != ''">
+                <![CDATA[
+	         		 AND A.REG_TIME <=  #{REG_TIME}
+	         		]]>
+            </if>
+
+        </trim>
+        <![CDATA[
+               ORDER BY REG_TIME DESC, LINE_NO,CAR_NO
+	  	]]>
+
+    </select>
+
+
+    <select id="getPosInfoNullList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.*,D.CANCELFLAG,#{BLACKLIST_VER_BASE} AS A,#{RATE_VER_ONE,jdbcType=VARCHAR} AS B,#{LAST_PRO_VER} AS C ,
+                                                case when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >=3 then '2M'
+            when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2 then '1M'
+              else '0M'
+                END as OVER_TIME ,count(*) over() as TOTAL
+                 FROM TAB_POSREG A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                                   INNER JOIN TAB_POSINFO D ON A.POS_ID = D.POS_ID
+                                   INNER JOIN SYS_USER_DEVGROUP UD
+                    ON UD.GROUP_ID = B.GROUP_ID
+                   AND UD.USER_ID = #{USERID}
+                   AND (A.ALARM4BLACKLISTVER = '1'
+                 	OR A.ALARM4DISCOUNT = '1'
+                 	OR A.ALARM4TICKETVER = '1'
+                 	OR D.CANCELFLAG = '1'
+                 	OR (ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2))
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO LIKE '%' || #{COMPANY_NO} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="CAR_NO != null and CAR_NO != ''">
+                AND A.CAR_NO LIKE '%' || #{CAR_NO} || '%'
+            </if>
+            <if test="REG_TIME != null and REG_TIME != ''">
+                <![CDATA[
+	         		 AND A.REG_TIME <=  #{REG_TIME}
+	         		]]>
+            </if>
+
+        </trim>
+        <![CDATA[
+                ORDER BY REG_TIME DESC, LINE_NO,CAR_NO
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+
+    <select id="getPosInfoNullListForExport" resultType="java.util.Map">
+        <![CDATA[
+			SELECT A.COMPANY_NO, A.LINE_NO,A.CAR_NO,A.POS_ID,A.MONTH_CURR_PRICE,A.PASM_NO,
+			A.REG_TIME,A.ALARM4BLACKLISTVER,A.ALARM4DISCOUNT, A.ALARM4TICKETVER,
+			A.LOCATIONSTATE,A.POS_TRANSEQ,A.POS_TRANSEQ_ALIPAY,A.LONGITUDE,A.LATITUDE, A.POS_TIME,
+			A.QRCODETRADENUM,A.POS_COUNTOFDATANOTSENT,A.POS_COUNTOFDATANOTSENT_ALIPAY,A.LASTTRANTIME,A.GPSTIME, A.DCS_NO,
+			A.TERMINAL_VER,A.BLACKLIST_VER_BASE,A.DISCOUNT_CURR_VER,A.MODEL_TYPE,A.SIM_CID, A.BEGINDAY,
+			A.PSAMSN,A.POSSN,A.TICKETVER1,A.TICKETVER2,A.PACKVER, A.POSVER,
+			A.GUIVER,A.AUDIOVER,A.MFRC52XVER,
+            D.CANCELFLAG,#{BLACKLIST_VER_BASE} AS A,#{RATE_VER_ONE,jdbcType=VARCHAR} AS B,#{LAST_PRO_VER} AS C ,
+                                                case when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >=3 then '2M'
+            when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2 then '1M'
+              else '0M'
+                END as OVER_TIME
+                 FROM TAB_POSREG A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                                   INNER JOIN TAB_POSINFO D ON A.POS_ID = D.POS_ID
+                                   INNER JOIN SYS_USER_DEVGROUP UD
+                    ON UD.GROUP_ID = B.GROUP_ID
+                   AND UD.USER_ID = #{USERID}
+                   AND (A.ALARM4BLACKLISTVER = '1'
+                 	OR A.ALARM4DISCOUNT = '1'
+                 	OR A.ALARM4TICKETVER = '1'
+                 	OR D.CANCELFLAG = '1'
+                 	OR (ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2))
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO LIKE '%' || #{COMPANY_NO} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="CAR_NO != null and CAR_NO != ''">
+                AND A.CAR_NO LIKE '%' || #{CAR_NO} || '%'
+            </if>
+            <if test="REG_TIME != null and REG_TIME != ''">
+                <![CDATA[
+	         		 AND A.REG_TIME <=  #{REG_TIME}
+	         		]]>
+            </if>
+
+        </trim>
+        <![CDATA[
+                ORDER BY REG_TIME DESC, LINE_NO,CAR_NO
+
+	  	]]>
+
+    </select>
+
+
+    <select id="getPosregAllList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (select A.POS_ID,A.REG_TIME,case
+                       when ceil(SYSDATE -TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 3 then '2M'
+                       when ceil(SYSDATE-TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2 then '1M'
+                       else '0M'
+                       END as OVER_TIME,
+                        A.ALARM4BLACKLISTVER,
+                        A.ALARM4DISCOUNT,
+                        A.ALARM4TICKETVER,
+                        A.COMPANY_NO,
+                        A.LINE_NO,
+                        A.CAR_NO,
+                        A.MONTH_CURR_PRICE,
+                        A.LOCATIONSTATE,
+                        A.POS_TRANSEQ,
+                        A.POS_TRANSEQ_ALIPAY,
+                        A.BLACKLIST_VER_BASE,
+                        A.BLACKLIST_VER_PLUS,
+                        A.BLACTLIST_VER_SUBTRACT,
+                        A.DISCOUNT_CURR_VER,
+                        A.DISCOUNT_BAK_VER,
+                        A.TICKETVER1,
+                        A.TICKETVER2,
+                        A.NUM4QUICKPASS,
+                        A.NUM4QUICKPASSROLLBACK,
+                        A.UNIONPAYREGSTATE,
+                        A.UNIONPAYCERTDOWNLOADSTATE,
+                        A.UNIONPAYQUICKPASSSTATE,
+                        A.BUSIIP,
+                        A.BUSIPORT,
+                        A.UNIONPAYIP,
+                        A.UNIONPAYPORT,
+                        A.UNIONPAYTRADEOVERTIME,
+                        A.UNIONPAYDEVNO,
+                        D.ID,
+                        D.MEMO,
+                        D.CANCELFLAG,
+                        C.CAR_ID,
+                        C.CAR_ZBH,
+                        C.CANCELFLAG AS C_CANCELFLAG,COUNT(*) OVER() AS TOTAL
+                from tab_posreg A
+                LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                LEFT JOIN TAB_CARINFO C ON C.CAR_NO=A.CAR_NO
+                LEFT JOIN TAB_POSINFO D ON A.POS_ID=D.POS_ID
+                INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+                AND D.CANCELFLAG = '0'
+                ORDER BY REG_TIME DESC, LINE_NO,CAR_NO
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+
+    <select id="getPosregList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (select A.POS_ID,A.REG_TIME,case
+                       when ceil(SYSDATE -TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 3 then '2M'
+                       when ceil(SYSDATE-TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2 then '1M'
+                       else '0M'
+                       END as OVER_TIME,
+                        A.ALARM4BLACKLISTVER,
+                        A.ALARM4DISCOUNT,
+                        A.ALARM4TICKETVER,
+                        A.COMPANY_NO,
+                        A.LINE_NO,
+                        A.CAR_NO,
+                        A.MONTH_CURR_PRICE,
+                        A.LOCATIONSTATE,
+                        A.POS_TRANSEQ,
+                        A.POS_TRANSEQ_ALIPAY,
+                        A.BLACKLIST_VER_BASE,
+                        A.BLACKLIST_VER_PLUS,
+                        A.BLACTLIST_VER_SUBTRACT,
+                        A.DISCOUNT_CURR_VER,
+                        A.DISCOUNT_BAK_VER,
+                        A.TICKETVER1,
+                        A.TICKETVER2,
+                        A.NUM4QUICKPASS,
+                        A.NUM4QUICKPASSROLLBACK,
+                        A.UNIONPAYREGSTATE,
+                        A.UNIONPAYCERTDOWNLOADSTATE,
+                        A.UNIONPAYQUICKPASSSTATE,
+                        A.BUSIIP,
+                        A.BUSIPORT,
+                        A.UNIONPAYIP,
+                        A.UNIONPAYPORT,
+                        A.UNIONPAYTRADEOVERTIME,
+                        A.UNIONPAYDEVNO,
+                        D.ID,
+                        D.MEMO,
+                        D.CANCELFLAG,
+                        C.CAR_ID,
+                        C.CAR_ZBH,
+                        C.CANCELFLAG AS C_CANCELFLAG,COUNT(*) OVER() AS TOTAL
+                from tab_posreg A
+                LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                LEFT JOIN TAB_CARINFO C ON C.CAR_NO=A.CAR_NO
+                LEFT JOIN TAB_POSINFO D ON A.POS_ID=D.POS_ID
+                INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+                AND D.CANCELFLAG = '0'
+                ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO = #{LINE_NO}
+            </if>
+            <if test="GROUP_ID != null and GROUP_ID != ''">
+                AND B.GROUP_ID = #{GROUP_ID} OR A.LINE_NO = #{GROUP_ID}
+            </if>
+        </trim>
+        <![CDATA[
+                ORDER BY REG_TIME DESC, LINE_NO,CAR_NO
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+
+
+    <select id="getPosregForChildTable" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.*,D.CANCELFLAG,#{BLACKLIST_VER_BASE} AS A,#{RATE_VER_ONE,jdbcType=VARCHAR} AS B,#{LAST_PRO_VER} AS C ,
+                                                case when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >=3 then '2M'
+            when ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= 2 then '1M'
+              else '0M'
+                END as OVER_TIME ,count(*) over() as TOTAL
+                 FROM TAB_POSREG A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                                   INNER JOIN TAB_POSINFO D ON A.POS_ID = D.POS_ID AND D.CANCELFLAG = 0
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+        </trim>
+        <![CDATA[
+                ORDER BY A.REG_TIME DESC, A.LINE_NO,CAR_NO
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+
+    <select id="getQuickPassDataList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.ID,A.POSID, A.DATATYPE,A.COMPANYCODE,A.LINENO,A.COLLECTSNO,A.CARNO,A.PSAM,A.SEQ4UNIONPAYTRADE,
+                       A.PAYCARDNO,A.PAYMERCHANT,A.PAYDEV,A.PAYMEDIUM,A.TRANSTIME,A.TRANSAMT,
+                       A.PREFERAMOUNT,A.PAYSEQ,A.PAYRETTIME,A.FARETYPE,A.FARE,A.CITYCODE,
+                       A.POSVER,A.RATEVER,A.PROCREATETIME,A.LONGTITUDE,A.LATITUDE,A.CONDUCTORNO,
+                       A.TRADETYPE,A.BANKDEALSNO,A.PRODUCTLOGO,TO_CHAR(A.ADDTIME, 'YYYY-MM-DD HH24:MI:SS') AS ADDTIME,A.UPLOADSTATE,
+                       A.CHECKSTATE,count(*) over() as TOTAL FROM TAB_QUICKPASSDATA_HIS A
+                       LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANYCODE
+                       INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TRADETYPE != null and TRADETYPE != ''">
+                AND A.TRADETYPE = #{TRADETYPE}
+            </if>
+            <if test="TRANSTIME_START != null and TRANSTIME_START != ''">
+                AND A.TRANSTIME >= #{TRANSTIME_START}
+            </if>
+            <if test="TRANSTIME_END != null and TRANSTIME_END != ''">
+                <![CDATA[
+	         		 AND A.TRANSTIME <= #{TRANSTIME_END}
+	         		]]>
+            </if>
+            <if test="POSID != null and POSID != ''">
+                AND A.POSID LIKE '%' || #{POSID} || '%'
+            </if>
+            <if test="COMPANYCODE != null and COMPANYCODE != ''">
+                AND A.COMPANYCODE = #{COMPANYCODE}
+            </if>
+            <if test="PAYMEDIUM != null and PAYMEDIUM != ''">
+                AND A.PAYMEDIUM = #{PAYMEDIUM}
+            </if>
+            <if test="LINENO != null and LINENO != ''">
+                AND A.LINENO LIKE '%' || #{LINENO} || '%'
+            </if>
+            <if test="CARNO != null and CARNO != ''">
+                AND A.CARNO LIKE '%' || #{CARNO} || '%'
+            </if>
+            <if test="PAYCARDNO != null and PAYCARDNO != ''">
+                AND A.PAYCARDNO LIKE '%' || #{PAYCARDNO} || '%'
+            </if>
+            <if test="COLLECTSNO != null and COLLECTSNO != ''">
+                AND A.COLLECTSNO LIKE '%' || #{COLLECTSNO} || '%'
+            </if>
+
+        </trim>
+        <![CDATA[
+                ORDER BY A.TRANSTIME DESC
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+    <select id="getQuickPassDataForEcharts" resultType="java.util.Map">
+        <![CDATA[
+			SELECT SUBSTR(A.TRANSTIME, 0, 8) AS TRANSDATE,COUNT(*) AS NUM,SUM(A.TRANSAMT) AS MONEY,COUNT(*) OVER() AS TOTAL
+			FROM TAB_QUICKPASSDATA_HIS A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANYCODE
+            INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TRADETYPE != null and TRADETYPE != ''">
+                AND A.TRADETYPE = #{TRADETYPE}
+            </if>
+            <if test="PAYMEDIUM != null and PAYMEDIUM != ''">
+                AND A.PAYMEDIUM = #{PAYMEDIUM}
+            </if>
+            <if test="TRANSTIME_START != null and TRANSTIME_START != ''">
+                AND A.TRANSTIME >= #{TRANSTIME_START}
+            </if>
+            <if test="TRANSTIME_END != null and TRANSTIME_END != ''">
+                <![CDATA[
+	         		 AND A.TRANSTIME <= #{TRANSTIME_END}
+	         		]]>
+            </if>
+            <if test="POSID != null and POSID != ''">
+                AND A.POSID LIKE '%' || #{POSID} || '%'
+            </if>
+            <if test="COMPANYCODE != null and COMPANYCODE != ''">
+                AND A.COMPANYCODE LIKE '%' || #{COMPANYCODE} || '%'
+            </if>
+            <if test="LINENO != null and LINENO != ''">
+                AND A.LINENO LIKE '%' || #{LINENO} || '%'
+            </if>
+            <if test="CARNO != null and CARNO != ''">
+                AND A.CARNO LIKE '%' || #{CARNO} || '%'
+            </if>
+            <if test="PAYCARDNO != null and PAYCARDNO != ''">
+                AND A.PAYCARDNO LIKE '%' || #{PAYCARDNO} || '%'
+            </if>
+            <if test="COLLECTSNO != null and COLLECTSNO != ''">
+                AND A.COLLECTSNO LIKE '%' || #{COLLECTSNO} || '%'
+            </if>
+
+        </trim>
+        <![CDATA[
+                GROUP BY SUBSTR(A.TRANSTIME, 0, 8)
+                ORDER BY SUBSTR(A.TRANSTIME, 0, 8)
+	  	]]>
+
+    </select>
+
+    <select id="getQuickPassDataListForExport" resultType="java.util.Map">
+        <![CDATA[
+			SELECT A.ID,A.POSID, A.DATATYPE,A.COMPANYCODE,A.LINENO,A.COLLECTSNO,A.CARNO,A.PSAM,A.SEQ4UNIONPAYTRADE,
+                       A.PAYCARDNO,A.PAYMERCHANT,A.PAYDEV,A.PAYMEDIUM,A.TRANSTIME,A.TRANSAMT,
+                       A.PREFERAMOUNT,A.PAYSEQ,A.PAYRETTIME,A.FARETYPE,A.FARE,A.CITYCODE,
+                       A.POSVER,A.RATEVER,A.PROCREATETIME,A.LONGTITUDE,A.LATITUDE,A.CONDUCTORNO,
+                       A.TRADETYPE,A.BANKDEALSNO,A.PRODUCTLOGO,TO_CHAR(A.ADDTIME, 'YYYY-MM-DD HH24:MI:SS') AS ADDTIME,A.UPLOADSTATE,
+                       A.CHECKSTATE,count(*) over() as TOTAL FROM TAB_QUICKPASSDATA_HIS A
+                       LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANYCODE
+                       INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TRADETYPE != null and TRADETYPE != ''">
+                AND A.TRADETYPE = #{TRADETYPE}
+            </if>
+            <if test="PAYMEDIUM != null and PAYMEDIUM != ''">
+                AND A.PAYMEDIUM = #{PAYMEDIUM}
+            </if>
+            <if test="TRANSTIME_START != null and TRANSTIME_START != ''">
+                AND A.TRANSTIME >= #{TRANSTIME_START}
+            </if>
+            <if test="TRANSTIME_END != null and TRANSTIME_END != ''">
+                <![CDATA[
+	         		 AND A.TRANSTIME <= #{TRANSTIME_END}
+	         		]]>
+            </if>
+            <if test="POSID != null and POSID != ''">
+                AND A.POSID LIKE '%' || #{POSID} || '%'
+            </if>
+            <if test="COMPANYCODE != null and COMPANYCODE != ''">
+                AND A.COMPANYCODE LIKE '%' || #{COMPANYCODE} || '%'
+            </if>
+            <if test="LINENO != null and LINENO != ''">
+                AND A.LINENO LIKE '%' || #{LINENO} || '%'
+            </if>
+            <if test="CARNO != null and CARNO != ''">
+                AND A.CARNO LIKE '%' || #{CARNO} || '%'
+            </if>
+            <if test="PAYCARDNO != null and PAYCARDNO != ''">
+                AND A.PAYCARDNO LIKE '%' || #{PAYCARDNO} || '%'
+            </if>
+            <if test="COLLECTSNO != null and COLLECTSNO != ''">
+                AND A.COLLECTSNO LIKE '%' || #{COLLECTSNO} || '%'
+            </if>
+
+        </trim>
+        <![CDATA[
+                ORDER BY A.TRANSTIME DESC
+	  	]]>
+
+    </select>
+
+
+    <select id="getDevVersionCountList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.TERMINAL_VER,COUNT(*) AS VERSIONCOUNT ,COUNT(*) OVER() AS TOTAL
+                FROM TAB_POSREG A
+                LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                LEFT JOIN TAB_POSINFO D ON A.POS_ID=D.POS_ID
+                INNER JOIN SYS_USER_DEVGROUP UD ON UD.GROUP_ID = B.GROUP_ID AND UD.USER_ID = #{USERID}
+                AND D.CANCELFLAG = '0'
+        ]]>
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO = #{COMPANY_NO}
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="TERMINAL_VER != null and TERMINAL_VER != ''">
+                AND A.TERMINAL_VER LIKE '%' || #{TERMINAL_VER} || '%'
+            </if>
+            <if test="AUDIOVER != null and AUDIOVER != ''">
+                AND A.AUDIOVER LIKE '%' || #{AUDIOVER} || '%'
+            </if>
+            <if test='MODEL_TYPE == "5"'>
+                AND SUBSTR(A.POS_ID,5,1)  = '5'
+            </if>
+            <if test='MODEL_TYPE == "1"'>
+                <![CDATA[
+	         		 AND SUBSTR(A.POS_ID,5,1) <> '5'
+	         	]]>
+            </if>
+            <if test="REG_TIME_START != null and REG_TIME_START != ''">
+	         	AND A.REG_TIME >= #{REG_TIME_START}
+            </if>
+            <if test="REG_TIME_END != null and REG_TIME_END != ''">
+                <![CDATA[
+	         		 AND A.REG_TIME <= #{REG_TIME_END}
+	         	]]>
+            </if>
+        </trim>
+        <![CDATA[
+                GROUP BY A.TERMINAL_VER
+                ORDER BY VERSIONCOUNT DESC
+                    ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+
+	  	]]>
+
+    </select>
+
+
+    <select id="getOfflinePosInfoList" resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.*
+			FROM (SELECT B1.*, ROWNUM RN
+				  FROM (SELECT A.*,D.CANCELFLAG,ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) as OVER_TIME,count(*) over() as TOTAL
+                 FROM TAB_POSREG A LEFT JOIN TAB_DEVGROUPS B ON B.GROUP_NO=A.COMPANY_NO
+                                          INNER JOIN (select t.pos_id,t.cancelflag from TAB_POSINFO t  group by t.pos_id,t.cancelflag)D
+                                          ON A.POS_ID = D.POS_ID
+                                          INNER JOIN SYS_USER_DEVGROUP UD
+                    ON UD.GROUP_ID = B.GROUP_ID
+                   AND UD.USER_ID = #{USERID}
+        ]]>
+        WHERE ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) > '1'
+            <if test="POS_ID != null and POS_ID != ''">
+                AND A.POS_ID LIKE '%' || #{POS_ID} || '%'
+            </if>
+            <if test="COMPANY_NO != null and COMPANY_NO != ''">
+                AND A.COMPANY_NO LIKE '%' || #{COMPANY_NO} || '%'
+            </if>
+            <if test="LINE_NO != null and LINE_NO != ''">
+                AND A.LINE_NO LIKE '%' || #{LINE_NO} || '%'
+            </if>
+            <if test="CAR_NO != null and CAR_NO != ''">
+                AND A.CAR_NO LIKE '%' || #{CAR_NO} || '%'
+            </if>
+            <if test="ALARMTYPE == 4">
+                AND ALARM4BLACKLISTVER = 1
+            </if>
+            <if test="ALARMTYPE == 1">
+                AND ALARM4DISCOUNT = 1
+            </if>
+            <if test="ALARMTYPE == 2">
+                AND ALARM4TICKETVER = 1
+            </if>
+            <if test="ALARMTYPE == 3">
+                AND ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >=3
+            </if>
+            <if test='NOSENDTYPE == "ZFB"'>
+                AND A.POS_COUNTOFDATANOTSENT_ALIPAY != 0
+            </if>
+            <if test='NOSENDTYPE == "SK"'>
+                AND A.POS_COUNTOFDATANOTSENT != 0
+            </if>
+            <if test="OVER_TIME != null and OVER_TIME != ''">
+                AND ceil(SYSDATE - TO_DATE(A.REG_TIME, 'YYYY-MM-DD HH24:MI:SS')) >= #{OVER_TIME}
+            </if>
+            <if test="REG_TIME != null and REG_TIME != ''">
+                <![CDATA[
+	         		 AND A.REG_TIME <=  #{REG_TIME}
+	         		]]>
+            </if>
+
+
+        <![CDATA[
+                ORDER BY REG_TIME DESC, LINE_NO,CAR_NO
+			      ) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+
+    <delete id="delPosList" >
+        DELETE FROM TAB_POSREG A1
+        WHERE A1.POS_ID
+        IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+    </delete>
+
+
+</mapper>

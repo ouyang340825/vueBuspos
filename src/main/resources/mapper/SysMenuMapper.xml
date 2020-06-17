@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.njty.buspos.mapper.SysMenuMapper">
+
+
+    <select id="getTopMenuTreeList" resultType="Map">
+        SELECT A1.* FROM SYS_MENU A1 LEFT JOIN  SYS_ROLE_MENU A2 ON A1.ID = A2.SYS_MENU_ID WHERE A1.TYPE='1'
+         AND A2.SYS_ROLE_ID = #{ROLEID}
+         ORDER BY A1.ID
+    </select>
+
+    <select id="getLeftMenuTreeList" resultType="com.njty.buspos.entity.TreeEntity">
+        SELECT A1.* FROM SYS_MENU A1 LEFT JOIN  SYS_ROLE_MENU A2 ON A1.ID = A2.SYS_MENU_ID WHERE (A1.TYPE='2' OR A1.TYPE='3')
+         AND A2.SYS_ROLE_ID = #{ROLEID} ORDER BY A1.ID
+    </select>
+
+    <select id="getAllMenuTreeList" resultType="com.njty.buspos.entity.TreeEntity">
+        SELECT A1.* FROM SYS_MENU A1  ORDER BY A1.ID
+    </select>
+
+    <select id="getMenuList"  resultType="java.util.Map">
+        <![CDATA[
+            SELECT DISTINCT A1.*,COUNT(*) OVER() AS TOTAL
+			FROM SYS_MENU A1
+
+        ]]>
+        <!--<trim prefix="WHERE" prefixOverrides="AND">
+            <if test="GROUP_NO != null and GROUP_NO != ''">
+                AND A1.GROUP_NO LIKE '%' ||  #{GROUP_NO} || '%'
+            </if>
+            <if test="GROUP_NAME != null and GROUP_NAME != ''">
+                AND A1.GROUP_NAME  LIKE '%' ||  #{GROUP_NAME} || '%'
+            </if>
+        </trim>-->
+        <![CDATA[
+                ORDER BY A1.PID
+	  	]]>
+
+    </select>
+
+    <insert id="addMenu" parameterType="map">
+        <![CDATA[
+			INSERT INTO SYS_MENU (ID , PID , TITLE , HREF, TYPE, ICON, SPREAD,PERMISSION)
+			VALUES (#{ID}, #{PID}, #{TITLE}, #{HREF},#{TYPE}, #{ICON},'false',#{PERMISSION})
+		]]>
+
+
+
+    </insert>
+
+    <update id="modMenu">
+		<![CDATA[
+			UPDATE SYS_MENU
+			SET
+			TITLE = #{TITLE},
+			HREF = #{HREF},
+			TYPE = #{TYPE},
+			ICON = #{ICON},
+			PERMISSION = #{PERMISSION}
+			where ID= #{ID}
+		]]>
+	</update>
+
+
+    <delete id="delMenuList" >
+        DELETE FROM SYS_MENU
+        WHERE ID
+        IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+    </delete>
+
+    <select id="getSelectMenuIdByRoleId"  resultType="java.util.Map">
+        SELECT DISTINCT A1.*,COUNT(*) OVER() AS TOTAL FROM SYS_ROLE_MENU A1 LEFT JOIN SYS_MENU A2 ON A1.SYS_MENU_ID = A2.ID
+          WHERE A1.SYS_ROLE_ID = #{ID} AND (A2.TYPE = 3 OR A2.TYPE = 4)
+          AND A2.ID NOT IN (SELECT DISTINCT A2.PID FROM SYS_ROLE_MENU A1
+          LEFT JOIN SYS_MENU A2 ON A1.SYS_MENU_ID = A2.ID
+          WHERE A1.SYS_ROLE_ID = #{ID} AND A2.TYPE = 4)
+    </select>
+
+    <delete id="delRoleMenu" >
+        DELETE FROM SYS_ROLE_MENU
+        WHERE SYS_ROLE_ID
+        IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <insert id="setRoleMenu" parameterType="map">
+        <![CDATA[
+			INSERT INTO SYS_ROLE_MENU (SYS_ROLE_ID , SYS_MENU_ID )
+			VALUES (#{SYS_ROLE_ID}, #{SYS_MENU_ID})
+		]]>
+    </insert>
+
+
+    <select id="getSysMenuByRoleId"  resultType="com.njty.buspos.entity.SysMenuEntity">
+        SELECT A1.permission FROM SYS_MENU A1 LEFT JOIN SYS_ROLE_MENU A2 ON A1.ID = A2.SYS_MENU_ID
+        where  A2.SYS_ROLE_ID= #{roleId} and a1.permission is not null
+    </select>
+
+
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.njty.buspos.mapper.SysRoleMapper">
+
+    <select id="getSysRoleList"  resultType="java.util.Map">
+        <![CDATA[
+			SELECT C1.* FROM (
+				  SELECT B1.*, ROWNUM RN FROM (
+				  SELECT A1.*,count(*) over() as TOTAL  FROM SYS_ROLE A1
+                  ORDER BY A1.INSERT_TIME) B1
+				  WHERE ROWNUM<=#{endNum}
+			) C1
+			WHERE RN>#{startNum}
+	  	]]>
+
+    </select>
+
+    <insert id="addSysRole" >
+		<![CDATA[
+			INSERT INTO SYS_ROLE (ID,ROLE_NAME,DESCPT,CODE,INSERT_TIME)
+			VALUES (#{ID},#{ROLE_NAME},#{DESCPT},#{CODE},#{INSERT_TIME})
+		]]>
+
+	</insert>
+
+    <update id="modSysRole">
+		<![CDATA[
+			UPDATE SYS_ROLE SET
+			ROLE_NAME = #{ROLE_NAME},
+			DESCPT = #{DESCPT},
+			UPDATE_TIME = #{UPDATE_TIME}
+			where ID = #{ID}
+		]]>
+	</update>
+
+
+    <delete id="delSysRoleList" >
+		DELETE FROM SYS_ROLE
+			WHERE ID
+			 IN
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+
+	</delete>
+
+
+
+	<select id="getSysRoleByUser"  resultType="com.njty.buspos.entity.SysRoleEntity">
+        <![CDATA[
+			  SELECT A1.* FROM SYS_ROLE A1
+			  where A1.ID = #{roleId}
+	  	]]>
+
+    </select>
+
+
+</mapper>
