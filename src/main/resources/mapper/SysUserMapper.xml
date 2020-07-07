@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.njty.buspos.mapper.SysUserMapper">
+<mapper namespace="com.njty.carpark.mapper.SysUserMapper">
 
-	<resultMap id="SysUserMap" type="com.njty.buspos.entity.SysUserEntity">
+	<resultMap id="SysUserMap" type="com.njty.carpark.entity.SysUserEntity">
 		<id column="id" jdbcType="VARCHAR" property="id" />
 		<result column="USERNAME" jdbcType="VARCHAR" property="username" />
 		<result column="MOBILE" jdbcType="VARCHAR" property="mobile" />
@@ -19,7 +19,7 @@
 		<result column="HEADIMG" jdbcType="VARCHAR" property="headImg" />
 	</resultMap>
 
-    <resultMap id="SysUserMap2" type="com.njty.buspos.entity.SysUserEntity">
+    <resultMap id="SysUserMap2" type="com.njty.carpark.entity.SysUserEntity">
         <id column="ID" jdbcType="VARCHAR" property="id" />
         <result column="USERNAME" jdbcType="VARCHAR" property="username" />
         <result column="MOBILE" jdbcType="VARCHAR" property="mobile" />
@@ -112,7 +112,7 @@
 	<select id="findUserByUsername"  resultMap="SysUserMap" >
         <![CDATA[
 			SELECT A1.*  FROM SYS_USER A1
-			WHERE A1.IS_DEL = '0' and A1.USERNAME = #{username,jdbcType=VARCHAR}
+			WHERE A1.USERNAME = #{username,jdbcType=VARCHAR}
 	  	]]>
 
     </select>

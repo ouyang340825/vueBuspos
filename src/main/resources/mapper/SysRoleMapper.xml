@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.njty.buspos.mapper.SysRoleMapper">
+<mapper namespace="com.njty.carpark.mapper.SysRoleMapper">
 
     <select id="getSysRoleList"  resultType="java.util.Map">
         <![CDATA[
@@ -46,7 +46,7 @@
 
 
 
-	<select id="getSysRoleByUser"  resultType="com.njty.buspos.entity.SysRoleEntity">
+	<select id="getSysRoleByUser"  resultType="com.njty.carpark.entity.SysRoleEntity">
         <![CDATA[
 			  SELECT A1.* FROM SYS_ROLE A1
 			  where A1.ID = #{roleId}

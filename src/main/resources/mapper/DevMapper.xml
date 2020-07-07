@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.njty.carpark.mapper.DevMapper">
+
+    <select id="getDevListTotal"  resultType="java.lang.Integer">
+        SELECT count(*) FROM TAB_DEV A1
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TERMINALCODE != null and TERMINALCODE != ''">
+                AND A1.TERMINALCODE LIKE '%' ||  #{TERMINALCODE} || '%'
+            </if>
+            <if test="FACTORYID != null and FACTORYID != ''">
+                AND A1.FACTORYID  =  #{FACTORYID}
+            </if>
+        </trim>
+        ORDER BY A1.TERMINALCODE
+    </select>
+
+    <select id="getDevList"  resultType="java.util.Map" >
+		SELECT A1.* FROM TAB_DEV A1
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TERMINALCODE != null and TERMINALCODE != ''">
+                AND A1.TERMINALCODE LIKE '%' ||  #{TERMINALCODE} || '%'
+            </if>
+            <if test="FACTORYID != null and FACTORYID != ''">
+                AND A1.FACTORYID  =  #{FACTORYID}
+            </if>
+        </trim>
+        ORDER BY A1.TERMINALCODE
+        limit ${startNum},${limit}
+    </select>
+
+    <select id="getDevStatusListTotal"  resultType="java.lang.Integer">
+        SELECT count(*)  FROM TAB_DEV A1
+        LEFT JOIN TAB_DEVSTATUSLAST A2 ON A2.TERMINALCODE = A1.TERMINALCODE
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TERMINALCODE != null and TERMINALCODE != ''">
+                AND A1.TERMINALCODE LIKE '%' ||  #{TERMINALCODE} || '%'
+            </if>
+            <if test="FACTORYID != null and FACTORYID != ''">
+                AND A1.FACTORYID  =  #{FACTORYID}
+            </if>
+        </trim>
+        ORDER BY A1.TERMINALCODE
+    </select>
+
+    <select id="getDevStatusList"  resultType="java.util.Map">
+				  SELECT A1.*,
+				   A2.COMPANYCODE,
+                   A2.STATIONCODE,
+                   A2.IP,
+                   A2.HARDVER,
+                   A2.SOFTVER,
+                   A2.COMMTYPE,
+                   A2.DIALCOUNT,
+                   A2.CONNECTTIME,
+                   A2.AUTHCODE,
+                   A2.CAMERASTATUS,
+                   A2.EPPSTATUS,
+                   A2.SCREENSTATUS,
+                   A2.ICREADERSTATUS,
+                   A2.BANKREADERSTATUS,
+                   A2.DISKSTATUS,
+                   A2.PRINTSTATUS,
+                   A2.UPSSTATUS,
+                   A2.SYSSTATUS,
+                   A2.BILLNUMBER,
+                   A2.CURRENTTIME,
+                   A2.DEVSTATE,
+                   A2.LNGLAT  FROM TAB_DEV A1
+				  LEFT JOIN TAB_DEVSTATUSLAST A2 ON A2.TERMINALCODE = A1.TERMINALCODE
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="TERMINALCODE != null and TERMINALCODE != ''">
+                AND A1.TERMINALCODE LIKE '%' ||  #{TERMINALCODE} || '%'
+            </if>
+            <if test="FACTORYID != null and FACTORYID != ''">
+                AND A1.FACTORYID  =  #{FACTORYID}
+            </if>
+        </trim>
+                ORDER BY A1.TERMINALCODE
+                limit ${startNum},${limit}
+    </select>
+
+
+
+    <insert id="addDev" >
+		<![CDATA[
+			INSERT INTO TAB_DEV (TERMINALCODE,FACTORYID,ADDRESS)
+			VALUES (#{TERMINALCODE}, #{FACTORYID}, #{ADDRESS})
+		]]>
+
+	</insert>
+
+    <update id="modDev">
+		<![CDATA[
+			UPDATE TAB_DEV
+			SET
+			TERMINALCODE = #{TERMINALCODE},
+			FACTORYID = #{FACTORYID},
+			ADDRESS = #{ADDRESS}
+			where ID= #{ID}
+		]]>
+	</update>
+
+
+    <delete id="delDevList" >
+		  DELETE FROM TAB_DEV A1
+			WHERE A1.ID
+			 IN
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+
+	</delete>
+
+
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.njty.carpark.mapper.TranResultMapper">
+
+    <select id="getTranResultListTotal"  resultType="java.lang.Integer">
+        SELECT count(*)  FROM TAB_PAYMENTRESULT A1
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="PAYID != null and PAYID != ''">
+                AND A1.PAYID LIKE '%' ||  #{PAYID} || '%'
+            </if>
+            <if test="PAYTIME != null and PAYTIME != ''">
+                AND A1.PAYTIME  =  #{PAYTIME}
+            </if>
+        </trim>
+    </select>
+
+    <select id="getTranResultList"  resultType="java.util.Map">
+        SELECT A1.*  FROM TAB_PAYMENTRESULT A1
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="PAYID != null and PAYID != ''">
+                AND A1.PAYID LIKE '%' ||  #{PAYID} || '%'
+            </if>
+            <if test="PAYTIME != null and PAYTIME != ''">
+                AND A1.PAYTIME  =  #{PAYTIME}
+            </if>
+        </trim>
+
+        limit ${startNum},${limit}
+    </select>
+
+
+
+</mapper>

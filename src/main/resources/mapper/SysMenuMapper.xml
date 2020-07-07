@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.njty.buspos.mapper.SysMenuMapper">
+<mapper namespace="com.njty.carpark.mapper.SysMenuMapper">
 
 
     <select id="getTopMenuTreeList" resultType="Map">
@@ -9,12 +9,12 @@
          ORDER BY A1.ID
     </select>
 
-    <select id="getLeftMenuTreeList" resultType="com.njty.buspos.entity.TreeEntity">
+    <select id="getLeftMenuTreeList" resultType="com.njty.carpark.entity.TreeEntity">
         SELECT A1.* FROM SYS_MENU A1 LEFT JOIN  SYS_ROLE_MENU A2 ON A1.ID = A2.SYS_MENU_ID WHERE (A1.TYPE='2' OR A1.TYPE='3')
          AND A2.SYS_ROLE_ID = #{ROLEID} ORDER BY A1.ID
     </select>
 
-    <select id="getAllMenuTreeList" resultType="com.njty.buspos.entity.TreeEntity">
+    <select id="getAllMenuTreeList" resultType="com.njty.carpark.entity.TreeEntity">
         SELECT A1.* FROM SYS_MENU A1  ORDER BY A1.ID
     </select>
 
@@ -98,7 +98,7 @@
     </insert>
 
 
-    <select id="getSysMenuByRoleId"  resultType="com.njty.buspos.entity.SysMenuEntity">
+    <select id="getSysMenuByRoleId"  resultType="com.njty.carpark.entity.SysMenuEntity">
         SELECT A1.permission FROM SYS_MENU A1 LEFT JOIN SYS_ROLE_MENU A2 ON A1.ID = A2.SYS_MENU_ID
         where  A2.SYS_ROLE_ID= #{roleId} and a1.permission is not null
     </select>
